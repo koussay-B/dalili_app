@@ -1,0 +1,8 @@
+{
+  "app_title": "DALILI - Conseils Médicaux",
+  "enter_prompt": "Entrez vos symptômes ci-dessous :",
+  "symptoms_hint": "ex : mal de tête, fièvre, fatigue...",
+  "get_advice": "Obtenir des conseils",
+  "enter_symptoms_error": "Veuillez entrer vos symptômes.",
+  "fetch_error": "Erreur lors de la récupération des conseils."
+}

@@ -1,0 +1,8 @@
+{
+  "app_title": "DALILI - Medical Advice",
+  "enter_prompt": "Enter your symptoms below:",
+  "symptoms_hint": "e.g. headache, fever, fatigue...",
+  "get_advice": "Get Advice",
+  "enter_symptoms_error": "Please enter your symptoms.",
+  "fetch_error": "Error fetching medical advice."
+}

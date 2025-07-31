@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "778054954270",
+    "project_id": "dalili-app-f4792",
+    "storage_bucket": "dalili-app-f4792.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778054954270:android:54d5a83f67df45ddb56d0f",
+        "android_client_info": {
+          "package_name": "com.example.dalili_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz99ddSUKNpJMmnSS_QCPWurEdhrXLppI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778054954270:android:7f24a04127d10c70b56d0f",
+        "android_client_info": {
+          "package_name": "com.koss.dalili"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz99ddSUKNpJMmnSS_QCPWurEdhrXLppI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
