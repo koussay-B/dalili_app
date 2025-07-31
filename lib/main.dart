@@ -4,19 +4,24 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
-import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'openia_service.dart';
 import 'history_screen.dart';
 import 'database_service.dart';
 import 'firebase_test.dart';
 import 'firebase_options.dart';
 import 'firebase_service.dart';
+import 'api_test_screen.dart';
 
 int? currentUserId;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  
+  // Charger les variables d'environnement depuis le fichier .env
+  await dotenv.load(fileName: ".env");
   
   // Initialisation de Firebase
   try {
@@ -87,6 +92,8 @@ class DaliliApp extends StatelessWidget {
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
+      // Décommenter la ligne ci-dessous pour tester l'API OpenAI
+      // home: const ApiTestScreen(),
       home: AuthScreen(),
     );
   }
