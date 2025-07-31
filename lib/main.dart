@@ -92,9 +92,10 @@ class DaliliApp extends StatelessWidget {
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
-      // Décommenter la ligne ci-dessous pour tester l'API OpenAI
-      // home: const ApiTestScreen(),
-      home: AuthScreen(),
+      // Pour tester l'API OpenAI, utilisez ApiTestScreen comme home
+      home: const ApiTestScreen(),
+      // Décommentez la ligne ci-dessous et commentez la ligne précédente pour revenir à l'écran de connexion
+      // home: AuthScreen(),
     );
   }
 }

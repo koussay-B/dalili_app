@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'openia_service.dart';
 
 class ApiTestScreen extends StatefulWidget {
   const ApiTestScreen({super.key});
@@ -11,70 +9,52 @@ class ApiTestScreen extends StatefulWidget {
 }
 
 class _ApiTestScreenState extends State<ApiTestScreen> {
-  String _result = '';
+  final OpenAIService _openAIService = OpenAIService();
   bool _loading = false;
+  String _resultTitle = '';
+  String _resultDetails = '';
+  bool _isSuccess = false;
 
-  Future<void> _testApiKey() async {
+  Future<void> _testApiConnection() async {
     setState(() {
       _loading = true;
-      _result = 'Test en cours...';
+      _resultTitle = 'Test en cours...';
+      _resultDetails = '';
     });
 
     try {
-      // Récupérer la clé API depuis le fichier .env
-      final apiKey = dotenv.env['OPENAI_API_KEY'];
+      final result = await _openAIService.testApiKey();
       
-      if (apiKey == null || apiKey.isEmpty || apiKey == 'your_openai_api_key_here') {
-        setState(() {
-          _loading = false;
-          _result = 'Erreur: Clé API OpenAI non définie dans le fichier .env';
-        });
-        return;
-      }
+      setState(() {
+        _loading = false;
+        _isSuccess = result['success'] == true;
+        _resultTitle = result['message'];
+        
+        if (_isSuccess) {
+          _resultDetails = '''
+Clé API utilisée: ${result['maskedKey']}
 
-      // Afficher la clé partiellement masquée pour vérification
-      final maskedKey = apiKey.substring(0, 5) + '...' + apiKey.substring(apiKey.length - 4);
-      
-      // Faire une requête simple à l'API OpenAI
-      final response = await http.post(
-        Uri.parse('https://api.openai.com/v1/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey',
-        },
-        body: jsonEncode({
-          'model': 'gpt-3.5-turbo',
-          'messages': [
-            {
-              'role': 'user',
-              'content': 'Hello, testing my API key. Please respond with "API key working correctly!"'
-            }
-          ],
-          'max_tokens': 50,
-        }),
-      );
+Réponse d'OpenAI à "Hello": 
+${result['response']}
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final content = data['choices'][0]['message']['content'];
-        setState(() {
-          _loading = false;
-          _result = 'Test réussi! ✅\n\n'
-              'Clé API utilisée: $maskedKey\n\n'
-              'Réponse d\'OpenAI: $content';
-        });
-      } else {
-        setState(() {
-          _loading = false;
-          _result = 'Erreur API: ${response.statusCode}\n'
-              'Clé API utilisée: $maskedKey\n\n'
-              'Réponse: ${response.body}';
-        });
-      }
+✅ Votre configuration .env fonctionne correctement!
+''';
+        } else {
+          _resultDetails = '''
+Clé API: ${result['maskedKey'] ?? 'Non disponible'}
+
+Erreur: ${result['response'] ?? 'Vérifiez votre fichier .env'}
+
+❌ La configuration a échoué. Consultez lib/README_ENV_SETUP.md pour plus d'informations.
+''';
+        }
+      });
     } catch (e) {
       setState(() {
         _loading = false;
-        _result = 'Exception: ${e.toString()}';
+        _isSuccess = false;
+        _resultTitle = 'Erreur inattendue';
+        _resultDetails = e.toString();
       });
     }
   }
@@ -83,47 +63,98 @@ class _ApiTestScreenState extends State<ApiTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Test de l\'API OpenAI'),
+        title: const Text('Test API OpenAI'),
+        backgroundColor: Colors.teal,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Ce test vérifie que votre application peut récupérer la clé API OpenAI depuis le fichier .env et effectuer une requête API.',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            Center(
-              child: ElevatedButton(
-                onPressed: _loading ? null : _testApiKey,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ce test vérifie:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('1. Si votre fichier .env est correctement chargé'),
+                    const Text('2. Si la variable OPENAI_API_KEY est définie'),
+                    const Text('3. Si la clé API peut se connecter à OpenAI'),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.api),
+                        label: const Text('TESTER LA CONNEXION'),
+                        onPressed: _loading ? null : _testApiConnection,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: _loading 
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Tester la connexion à OpenAI API'),
               ),
             ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            if (_loading)
+              const Center(
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 8),
+                    Text('Test en cours...'),
+                  ],
                 ),
-                child: SingleChildScrollView(
-                  child: Text(
-                    _result,
-                    style: const TextStyle(fontSize: 14),
+              ),
+            if (!_loading && _resultTitle.isNotEmpty)
+              Expanded(
+                child: Card(
+                  elevation: 3,
+                  color: _isSuccess ? Colors.green.shade50 : Colors.red.shade50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              _isSuccess ? Icons.check_circle : Icons.error,
+                              color: _isSuccess ? Colors.green.shade800 : Colors.red.shade800,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _resultTitle,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: _isSuccess ? Colors.green.shade800 : Colors.red.shade800,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(_resultDetails),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
